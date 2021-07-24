@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import anton.miranouski.pomodoro.databinding.StopwatchItemBinding
+import anton.miranouski.pomodoro.service.displayTime
 
 class StopwatchViewHolder(
     private val binding: StopwatchItemBinding,
@@ -15,12 +16,19 @@ class StopwatchViewHolder(
     private var timer: CountDownTimer? = null
 
     fun bind(stopwatch: Stopwatch) {
-        binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+        if (stopwatch.isFinished) {
+            binding.stopwatchTimer.text = ZERO_TIME
+        } else {
+            binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
+        }
+
+        binding.progressBar.setPeriod(stopwatch.period)
+        binding.progressBar.setCurrent(stopwatch.period - stopwatch.currentMs)
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
         } else {
-            stopTimer(stopwatch)
+            stopTimer()
         }
 
         initButtonListeners(stopwatch)
@@ -51,55 +59,38 @@ class StopwatchViewHolder(
         (binding.blinkingIndicator.background as? AnimationDrawable)?.start()
     }
 
-    private fun stopTimer(stopwatch: Stopwatch) {
+    private fun stopTimer() {
         binding.startPauseButton.text = "Start"
 
         timer?.cancel()
-        timer = getCountDownTimer(stopwatch)
 
         binding.blinkingIndicator.isInvisible = true
         (binding.blinkingIndicator.background as? AnimationDrawable)?.stop()
     }
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
-        return object : CountDownTimer(stopwatch.period, UNIT_MS) {
+        return object : CountDownTimer(stopwatch.currentMs, UNIT_MS) {
 
             val interval = UNIT_MS
 
             override fun onTick(millisUntilFinished: Long) {
                 stopwatch.currentMs -= interval
+                binding.progressBar.setCurrent(stopwatch.period - stopwatch.currentMs)
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
             }
 
             override fun onFinish() {
+                stopwatch.isFinished = true
+                stopTimer()
                 listener.stop(stopwatch.id, stopwatch.period)
-                Toast.makeText(itemView.context, "Timer ended", Toast.LENGTH_SHORT).show()
+                Toast.makeText(itemView.context, "Timer finished!", Toast.LENGTH_SHORT).show()
             }
-        }
-    }
-
-    private fun Long.displayTime(): String {
-        if (this <= 0L) {
-            return START_TIME
-        }
-        val h = this / 1000 / 3600
-        val m = this / 1000 % 3600 / 60
-        val s = this / 1000 % 60
-
-        return "${displaySlot(h)}:${displaySlot(m)}:${displaySlot(s)}"
-    }
-
-    private fun displaySlot(count: Long): String {
-        return if (count / 10L > 0) {
-            "$count"
-        } else {
-            "0$count"
         }
     }
 
     private companion object {
 
-        private const val START_TIME = "00:00:00"
+        private const val ZERO_TIME = "00:00:00"
         private const val UNIT_MS = 1000L
     }
 }

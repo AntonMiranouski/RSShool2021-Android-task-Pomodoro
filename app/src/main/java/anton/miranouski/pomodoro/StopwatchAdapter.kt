@@ -32,6 +32,8 @@ class StopwatchAdapter(
                 return oldItem.currentMs == newItem.currentMs &&
                         oldItem.isStarted == newItem.isStarted
             }
+
+            override fun getChangePayload(oldItem: Stopwatch, newItem: Stopwatch) = Any()
         }
     }
 }

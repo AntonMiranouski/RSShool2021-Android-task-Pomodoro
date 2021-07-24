@@ -33,6 +33,16 @@
             app:layout_constraintStart_toEndOf="@id/blinking_indicator"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <anton.miranouski.pomodoro.customView.ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            app:progress_bar_color="@color/red"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/start_pause_button"
+            app:layout_constraintStart_toEndOf="@+id/stopwatch_timer"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <Button
             android:id="@+id/start_pause_button"
             android:layout_width="0dp"
